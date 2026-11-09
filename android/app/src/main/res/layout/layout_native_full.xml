@@ -69,7 +69,7 @@
             android:ellipsize="end"
             android:gravity="start|center_vertical"
             android:singleLine="true"
-            android:textColor="#1A1A1A"
+            android:textColor="@color/gnt_white"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_goneMarginStart="16dp"

@@ -73,14 +73,14 @@ class PremiumController extends BaseController {
 
   static final _coinTemplateByProductId = <String, PremiumCoinItem>{
     IAPHelper.itemCoin1: const PremiumCoinItem(
-      productId: "lovery.coin.p01",
+      productId: "characterlover.coin.p01",
       displayCoin: 100,
       baseCoin: 100,
       bonusCoin: 0,
       fallbackPrice: 1.99,
     ),
     IAPHelper.itemCoin2: const PremiumCoinItem(
-      productId: "lovery.coin.p02",
+      productId: "characterlover.coin.p02",
       displayCoin: 220,
       baseCoin: 200,
       bonusCoin: 20,
@@ -88,7 +88,7 @@ class PremiumController extends BaseController {
       badgeText: '+10%',
     ),
     IAPHelper.itemCoin3: const PremiumCoinItem(
-      productId: "lovery.coin.p03",
+      productId: "characterlover.coin.p03",
       displayCoin: 550,
       baseCoin: 500,
       bonusCoin: 50,
@@ -96,7 +96,7 @@ class PremiumController extends BaseController {
       badgeText: '+10%',
     ),
     IAPHelper.itemCoin4: const PremiumCoinItem(
-      productId: "lovery.coin.p04",
+      productId: "characterlover.coin.p04",
       displayCoin: 1200,
       baseCoin: 1000,
       bonusCoin: 200,
@@ -104,7 +104,7 @@ class PremiumController extends BaseController {
       badgeText: '+20% Elite Choice',
     ),
     IAPHelper.itemCoin5: const PremiumCoinItem(
-      productId: "lovery.coin.p05",
+      productId: "characterlover.coin.p05",
       displayCoin: 2400,
       baseCoin: 2000,
       bonusCoin: 400,
@@ -112,7 +112,55 @@ class PremiumController extends BaseController {
       badgeText: '+20%',
     ),
     IAPHelper.itemCoin6: const PremiumCoinItem(
-      productId: "lovery.coin.p06",
+      productId: "characterlover.coin.p06",
+      displayCoin: 5200,
+      baseCoin: 4000,
+      bonusCoin: 1200,
+      fallbackPrice: 29.99,
+      badgeText: "+30% Best Offer",
+    ),
+    // Characterlover hyphen aliases
+    "characterlover-coin-p01": const PremiumCoinItem(
+      productId: "characterlover.coin.p01",
+      displayCoin: 100,
+      baseCoin: 100,
+      bonusCoin: 0,
+      fallbackPrice: 1.99,
+    ),
+    "characterlover-coin-p02": const PremiumCoinItem(
+      productId: "characterlover.coin.p02",
+      displayCoin: 220,
+      baseCoin: 200,
+      bonusCoin: 20,
+      fallbackPrice: 3.99,
+      badgeText: '+10%',
+    ),
+    "characterlover-coin-p03": const PremiumCoinItem(
+      productId: "characterlover.coin.p03",
+      displayCoin: 550,
+      baseCoin: 500,
+      bonusCoin: 50,
+      fallbackPrice: 6.99,
+      badgeText: '+10%',
+    ),
+    "characterlover-coin-p04": const PremiumCoinItem(
+      productId: "characterlover.coin.p04",
+      displayCoin: 1200,
+      baseCoin: 1000,
+      bonusCoin: 200,
+      fallbackPrice: 9.99,
+      badgeText: '+20% Elite Choice',
+    ),
+    "characterlover-coin-p05": const PremiumCoinItem(
+      productId: "characterlover.coin.p05",
+      displayCoin: 2400,
+      baseCoin: 2000,
+      bonusCoin: 400,
+      fallbackPrice: 19.99,
+      badgeText: '+20%',
+    ),
+    "characterlover-coin-p06": const PremiumCoinItem(
+      productId: "characterlover.coin.p06",
       displayCoin: 5200,
       baseCoin: 4000,
       bonusCoin: 1200,
@@ -121,14 +169,14 @@ class PremiumController extends BaseController {
     ),
     // Hyphen aliases
     "lovery-coin-p01": const PremiumCoinItem(
-      productId: "lovery.coin.p01",
+      productId: "characterlover.coin.p01",
       displayCoin: 100,
       baseCoin: 100,
       bonusCoin: 0,
       fallbackPrice: 1.99,
     ),
     "lovery-coin-p02": const PremiumCoinItem(
-      productId: "lovery.coin.p02",
+      productId: "characterlover.coin.p02",
       displayCoin: 220,
       baseCoin: 200,
       bonusCoin: 20,
@@ -136,7 +184,7 @@ class PremiumController extends BaseController {
       badgeText: '+10%',
     ),
     "lovery-coin-p03": const PremiumCoinItem(
-      productId: "lovery.coin.p03",
+      productId: "characterlover.coin.p03",
       displayCoin: 550,
       baseCoin: 500,
       bonusCoin: 50,
@@ -144,7 +192,7 @@ class PremiumController extends BaseController {
       badgeText: '+10%',
     ),
     "lovery-coin-p04": const PremiumCoinItem(
-      productId: "lovery.coin.p04",
+      productId: "characterlover.coin.p04",
       displayCoin: 1200,
       baseCoin: 1000,
       bonusCoin: 200,
@@ -152,7 +200,7 @@ class PremiumController extends BaseController {
       badgeText: '+20% Elite Choice',
     ),
     "lovery-coin-p05": const PremiumCoinItem(
-      productId: "lovery.coin.p05",
+      productId: "characterlover.coin.p05",
       displayCoin: 2400,
       baseCoin: 2000,
       bonusCoin: 400,
@@ -160,7 +208,7 @@ class PremiumController extends BaseController {
       badgeText: '+20%',
     ),
     "lovery-coin-p06": const PremiumCoinItem(
-      productId: "lovery.coin.p06",
+      productId: "characterlover.coin.p06",
       displayCoin: 5200,
       baseCoin: 4000,
       bonusCoin: 1200,

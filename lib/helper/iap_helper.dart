@@ -27,21 +27,22 @@ import 'firebase_helper.dart';
 class IAPHelper {
   static String iosSecret = '';
   static String itemWeekly = '';
-  static String itemMonthly = 'lovery.sub.m01';
-  static String itemYearly = 'lovery.sub.y01';
-  static String itemYearlySale = 'lovery.sub.y01.sale';
-  static String itemCoin1 = "lovery.coin.p01";
-  static String itemCoin2 = "lovery.coin.p02";
-  static String itemCoin3 = "lovery.coin.p03";
-  static String itemCoin4 = "lovery.coin.p04";
-  static String itemCoin5 = "lovery.coin.p05";
-  static String itemCoin6 = "lovery.coin.p06";
-  static String itemCoin1Alt = "lovery-coin-p01";
-  static String itemCoin2Alt = "lovery-coin-p02";
-  static String itemCoin3Alt = "lovery-coin-p03";
-  static String itemCoin4Alt = "lovery-coin-p04";
-  static String itemCoin5Alt = "lovery-coin-p05";
-  static String itemCoin6Alt = "lovery-coin-p06";
+  static String itemMonthly = 'characterlover.sub.m01';
+  static String itemYearly = 'characterlover.sub.y01';
+  static String itemYearlySale = 'characterloversub.y01.sale';
+  static String itemYearlySaleAlt = 'characterlover.sub.y01.sale';
+  static String itemCoin1 = "characterlover.coin.p01";
+  static String itemCoin2 = "characterlover.coin.p02";
+  static String itemCoin3 = "characterlover.coin.p03";
+  static String itemCoin4 = "characterlover.coin.p04";
+  static String itemCoin5 = "characterlover.coin.p05";
+  static String itemCoin6 = "characterlover.coin.p06";
+  static String itemCoin1Alt = "characterlover-coin-p01";
+  static String itemCoin2Alt = "characterlover-coin-p02";
+  static String itemCoin3Alt = "characterlover-coin-p03";
+  static String itemCoin4Alt = "characterlover-coin-p04";
+  static String itemCoin5Alt = "characterlover-coin-p05";
+  static String itemCoin6Alt = "characterlover-coin-p06";
 
   /// True khi đang mở flow mua (chặn double-tap Store / Premium).
   static final RxBool checkoutBusy = false.obs;
@@ -73,7 +74,15 @@ class IAPHelper {
     return id == itemMonthly.toLowerCase() ||
         id == itemYearly.toLowerCase() ||
         id == itemYearlySale.toLowerCase() ||
+        id == itemYearlySaleAlt.toLowerCase() ||
         (itemWeekly.isNotEmpty && id == itemWeekly.toLowerCase()) ||
+        id == 'characterlover.sub.m01' ||
+        id == 'characterlover.sub.y01' ||
+        id == 'characterloversub.y01.sale' ||
+        id == 'characterlover.sub.y01.sale' ||
+        id == 'lovery.sub.m01' ||
+        id == 'lovery.sub.y01' ||
+        id == 'lovery.sub.y01.sale' ||
         id == 'waifu.sub.m01' ||
         id == 'waifu.sub.y01' ||
         id == 'waifu.sub.y01.sale' ||
@@ -158,7 +167,7 @@ class IAPHelper {
       final isGoogle = !Platform.isIOS;
       final pid = purchase.productID;
 
-      if (pid == itemMonthly || pid == 'waifu.sub.m01') {
+      if (pid == itemMonthly || pid == 'characterlover.sub.m01' || pid == 'lovery.sub.m01' || pid == 'waifu.sub.m01') {
         AdjustHelper().trackEventBuyMonthlySuccess(
           purchase: purchase,
           productDetail: currentPurchaseProduct!,
@@ -168,7 +177,7 @@ class IAPHelper {
           productDetail: currentPurchaseProduct!,
           isGoogle: isGoogle,
         );
-      } else if (pid == itemYearly || pid == 'waifu.sub.y01') {
+      } else if (pid == itemYearly || pid == 'characterlover.sub.y01' || pid == 'lovery.sub.y01' || pid == 'waifu.sub.y01') {
         AdjustHelper().trackEventBuyYearlySuccess(
           purchase: purchase,
           productDetail: currentPurchaseProduct!,
@@ -178,7 +187,7 @@ class IAPHelper {
           productDetail: currentPurchaseProduct!,
           isGoogle: isGoogle,
         );
-      } else if (pid == itemYearlySale || pid == 'waifu.sub.y01.sale') {
+      } else if (pid == itemYearlySale || pid == itemYearlySaleAlt || pid == 'characterloversub.y01.sale' || pid == 'characterlover.sub.y01.sale' || pid == 'lovery.sub.y01.sale' || pid == 'waifu.sub.y01.sale') {
         AdjustHelper().trackEventBuyYearlySaleSuccess(
           purchase: purchase,
           productDetail: currentPurchaseProduct!,
@@ -225,12 +234,7 @@ class IAPHelper {
   /// - inapp: mua gem / các IAP không phải subscription
   static String _weifuProductTypeFor(String productId) {
     if (_isCoinProduct(productId)) return 'inapp';
-    if (productId == itemMonthly ||
-        productId == itemYearly ||
-        productId == itemYearlySale ||
-        (itemWeekly.isNotEmpty && productId == itemWeekly)) {
-      return 'subscription';
-    }
+    if (isSubscriptionProductId(productId)) return 'subscription';
     if (productId == itemRemoveAds) return 'inapp';
     return 'inapp';
   }
@@ -250,6 +254,8 @@ class IAPHelper {
         id == itemCoin5Alt.toLowerCase() ||
         id == itemCoin6Alt.toLowerCase() ||
         id.contains('coin') ||
+        id.startsWith('characterlover-coin') ||
+        id.startsWith('characterlover.coin') ||
         id.startsWith('lovery-coin') ||
         id.startsWith('lovery.coin') ||
         id.startsWith('waifu-coin') ||
@@ -271,6 +277,20 @@ class IAPHelper {
 
   static String? _aliasProductId(String productId) {
     const alias = {
+      "characterlover.coin.p01": "characterlover-coin-p01",
+      "characterlover.coin.p02": "characterlover-coin-p02",
+      "characterlover.coin.p03": "characterlover-coin-p03",
+      "characterlover.coin.p04": "characterlover-coin-p04",
+      "characterlover.coin.p05": "characterlover-coin-p05",
+      "characterlover.coin.p06": "characterlover-coin-p06",
+      "characterlover-coin-p01": "characterlover.coin.p01",
+      "characterlover-coin-p02": "characterlover.coin.p02",
+      "characterlover-coin-p03": "characterlover.coin.p03",
+      "characterlover-coin-p04": "characterlover.coin.p04",
+      "characterlover-coin-p05": "characterlover.coin.p05",
+      "characterlover-coin-p06": "characterlover.coin.p06",
+      "characterloversub.y01.sale": "characterlover.sub.y01.sale",
+      "characterlover.sub.y01.sale": "characterloversub.y01.sale",
       "lovery.coin.p01": "lovery-coin-p01",
       "lovery.coin.p02": "lovery-coin-p02",
       "lovery.coin.p03": "lovery-coin-p03",
@@ -305,6 +325,7 @@ class IAPHelper {
       itemMonthly,
       itemYearly,
       itemYearlySale,
+      itemYearlySaleAlt,
       itemCoin1,
       itemCoin2,
       itemCoin3,
@@ -317,6 +338,22 @@ class IAPHelper {
       itemCoin4Alt,
       itemCoin5Alt,
       itemCoin6Alt,
+      // Legacy lovery IDs for backward compatibility:
+      'lovery.sub.m01',
+      'lovery.sub.y01',
+      'lovery.sub.y01.sale',
+      'lovery-coin-p01',
+      'lovery-coin-p02',
+      'lovery-coin-p03',
+      'lovery-coin-p04',
+      'lovery-coin-p05',
+      'lovery-coin-p06',
+      'lovery.coin.p01',
+      'lovery.coin.p02',
+      'lovery.coin.p03',
+      'lovery.coin.p04',
+      'lovery.coin.p05',
+      'lovery.coin.p06',
       // Legacy waifu IDs for backward compatibility if store console still uses them:
       'waifu.sub.m01',
       'waifu.sub.y01',
@@ -814,7 +851,7 @@ class IAPHelper {
         if (products.isEmpty) {
           await loadProducts();
         }
-        final matchIds = [itemMonthly, 'waifu.sub.m01'];
+        final matchIds = [itemMonthly, 'characterlover.sub.m01', 'lovery.sub.m01', 'waifu.sub.m01'];
         List<ProductDetails> listProductMonth = [];
         for (var item in products) {
           if (matchIds.contains(item.id)) {
@@ -874,7 +911,7 @@ class IAPHelper {
         if (products.isEmpty) {
           await loadProducts();
         }
-        final matchIds = [itemYearly, 'waifu.sub.y01'];
+        final matchIds = [itemYearly, 'characterlover.sub.y01', 'lovery.sub.y01', 'waifu.sub.y01'];
         var arrYearlyProducts =
             products.where((element) => matchIds.contains(element.id)).toList();
         ProductDetails? yearlyProduct;
@@ -922,7 +959,21 @@ class IAPHelper {
         if (products.isEmpty) {
           await loadProducts();
         }
-        final matchIds = [itemYearlySale, 'waifu.sub.y01.sale'];
+        final matchIds = [
+
+          itemYearlySale,
+
+          itemYearlySaleAlt,
+
+          'characterloversub.y01.sale',
+
+          'characterlover.sub.y01.sale',
+
+          'lovery.sub.y01.sale',
+
+          'waifu.sub.y01.sale',
+
+        ];
         var arrYearlyProducts =
             products.where((element) => matchIds.contains(element.id)).toList();
         ProductDetails? yearlyProduct;
@@ -968,6 +1019,34 @@ class IAPHelper {
       if (aliasId != null) {
         final aliasProduct = products.firstWhereOrNull((e) => e.id == aliasId);
         if (aliasProduct != null) return aliasProduct;
+      }
+      // Fallback across characterlover, lovery and waifu
+      final prefixes = ['characterlover', 'lovery', 'waifu'];
+      for (final prefix in prefixes) {
+        if (productId.contains(prefix)) {
+          for (final other in prefixes) {
+            if (prefix != other) {
+              final otherId = productId.replaceAll(prefix, other);
+              final p = products.firstWhereOrNull((e) => e.id == otherId);
+              if (p != null) return p;
+              final aId = _aliasProductId(otherId);
+              if (aId != null) {
+                final ap = products.firstWhereOrNull((e) => e.id == aId);
+                if (ap != null) return ap;
+              }
+            }
+          }
+        }
+      }
+      if (productId.contains('characterloversub')) {
+        final dotVersion = productId.replaceAll('characterloversub', 'characterlover.sub');
+        final p = products.firstWhereOrNull((e) => e.id == dotVersion);
+        if (p != null) return p;
+      }
+      if (productId.contains('characterlover.sub')) {
+        final noDotVersion = productId.replaceAll('characterlover.sub', 'characterloversub');
+        final p = products.firstWhereOrNull((e) => e.id == noDotVersion);
+        if (p != null) return p;
       }
       // Dual fallback between lovery and waifu
       if (productId.contains('lovery')) {
@@ -1169,6 +1248,14 @@ class IAPHelper {
           profile.currentUser.value!.gems =
               (profile.currentUser.value!.gems ?? 0) + grantedGems.toInt();
           profile.currentUser.refresh();
+        } else if (isSubscriptionProductId(productId) && profile.currentUser.value != null) {
+          // Bảo đảm các gói VIP/SVIP luôn được cộng đúng số gem bonus (m01: +300, y01: +1000)
+          final bonus = getGemsForProduct(productId);
+          if (bonus > 0) {
+            profile.currentUser.value!.gems =
+                (profile.currentUser.value!.gems ?? 0) + bonus;
+            profile.currentUser.refresh();
+          }
         }
         await profile.fetchProfile();
       }
