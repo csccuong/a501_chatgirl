@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1031416168922",
+    "project_id": "a501---ai-character-chat-v3",
+    "storage_bucket": "a501---ai-character-chat-v3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031416168922:android:1a48f44773e26619b000e3",
+        "android_client_info": {
+          "package_name": "com.aichat.chatbotai.lovechat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZqmUOwBmOnfnPaGhl-G6SMTvhmRfQki0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,63 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://android-sdk.is.com/"
+        }
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle/"
+        }
+        maven {
+            url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea"
+        }
+        maven { url 'https://artifacts.applovin.com/android' }
+
+//        maven {
+//            url 'https://android-sdk.is.com/'
+//        }
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    if (project.projectDir.path.startsWith(rootProject.projectDir.parentFile.path)) {
+        project.buildDir = "${rootProject.buildDir}/${project.name}"
+    }
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+subprojects {
+    project.plugins.withId("com.android.application") {
+        project.android {
+            ndkVersion "28.2.13676358"
+        }
+    }
+    project.plugins.withId("com.android.library") {
+        project.android {
+            ndkVersion "28.2.13676358"
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
+
+buildscript {
+    ext.kotlin_version = '2.1.0'
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url 'https://android-sdk.is.com/'
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.11.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}

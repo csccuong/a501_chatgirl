@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="applicationName">Lover AI: AI Character Chat</string>
+    <string name="facebook_app_id">4094921670649436</string>
+    <string name="fb_login_protocol_scheme">fb1666986417761090</string>
+    <string name="facebook_client_token">1b24072d5c56a3064fd3e4604805431b</string>
+</resources>
