@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:easy_ads_flutter/easy_ads_flutter.dart';
 import 'package:flutter/material.dart';
-import 'easy_loading_splash.dart';
+import 'easy_ad_loading_popup.dart';
 
 class EasyInterstitialAdSplashWith3Id extends StatefulWidget {
   final AdNetwork adNetwork;
@@ -77,9 +77,7 @@ class _EasyInterstitialAdSplashWith3IdState
             _onAdFailedToLoad();
             break;
           case AdEventType.adDismissed:
-            EasyAds.instance.setFullscreenAdShowing(false);
-            widget.adDismissed?.call();
-            _streamSubscription?.cancel();
+            _dismissAndClose();
             break;
           case AdEventType.adFailedToShow:
             _onAdFailedToShow();
@@ -169,10 +167,7 @@ class _EasyInterstitialAdSplashWith3IdState
   }
 
   void _onAllAdsFailed() {
-    _isLoading = false;
-    widget.onFailed?.call();
-    EasyAds.instance.setFullscreenAdShowing(false);
-    _streamSubscription?.cancel();
+    _dismissAndFail();
   }
 
   bool _isDisposed = false;
@@ -214,13 +209,31 @@ class _EasyInterstitialAdSplashWith3IdState
     super.dispose();
   }
 
+  void _dismissAndClose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _streamSubscription?.cancel();
+    EasyAds.instance.setFullscreenAdShowing(false);
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    widget.adDismissed?.call();
+  }
+
+  void _dismissAndFail() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _isLoading = false;
+    _streamSubscription?.cancel();
+    EasyAds.instance.setFullscreenAdShowing(false);
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    widget.onFailed?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: EasyLoadingSplash(
-        message: EasyAds.configuredLoadingMessage,
-      ),
-    );
+    return const EasyAdLoadingPopup();
   }
 }

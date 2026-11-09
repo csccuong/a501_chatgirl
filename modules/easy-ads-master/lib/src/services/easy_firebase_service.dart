@@ -1,6 +1,6 @@
 import 'dart:io';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../easy_ads_flutter.dart';
 
@@ -23,7 +23,7 @@ class EasyFirebaseService {
     required double valueMicros,
     required String currencyCode,
   }) async {
-    if (_analytics == null || kDebugMode) {
+    if (_analytics == null) {
       return;
     }
 

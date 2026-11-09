@@ -99,6 +99,8 @@ class EasyLogger {
       case AdEventType.onPaidEvent:
         _onPaidEvent(event);
         break;
+      case AdEventType.onAdImpression:
+        break;
     }
   }
 }

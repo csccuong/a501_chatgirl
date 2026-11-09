@@ -6,11 +6,13 @@ import '../easy_ads.dart';
 class EasyAdLoadingPopup extends StatelessWidget {
   final Widget? customPopup;
   final String? message;
+  final String? subMessage;
 
   const EasyAdLoadingPopup({
     Key? key,
     this.customPopup,
     this.message,
+    this.subMessage,
   }) : super(key: key);
 
   @override
@@ -34,10 +36,13 @@ class EasyAdLoadingPopup extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            width: 130,
-            height: 130,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            constraints: const BoxConstraints(
+              minWidth: 160,
+              maxWidth: 240,
+            ),
             decoration: BoxDecoration(
-              color: const Color(0xE60D1016),
+              color: const Color(0xF20D1016),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: const Color(0x1FFFFFFF),
@@ -45,18 +50,19 @@ class EasyAdLoadingPopup extends StatelessWidget {
               ),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x59000000),
-                  blurRadius: 18,
-                  offset: Offset(0, 6),
+                  color: Color(0x73000000),
+                  blurRadius: 20,
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: 64,
-                  height: 64,
+                  width: 52,
+                  height: 52,
                   child: Lottie.asset(
                     'assets/json/loading_ads.json',
                     package: 'easy_ads_flutter',
@@ -83,13 +89,25 @@ class EasyAdLoadingPopup extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
-                  message ?? 'Loading Ads...',
+                  message ?? 'Loading...',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subMessage ?? 'This action may contain ads',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
                     decoration: TextDecoration.none,
                   ),
                 ),

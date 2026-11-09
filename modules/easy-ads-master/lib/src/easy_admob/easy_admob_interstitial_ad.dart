@@ -11,8 +11,9 @@ class EasyAdmobInterstitialAd extends EasyAdBase {
   EasyAdmobInterstitialAd(
     super.adUnitId,
     this._adRequest,
-    this._immersiveModeEnabled,
-  );
+    this._immersiveModeEnabled, {
+    String? adIdName,
+  }) : super(adIdName: adIdName);
 
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded = false;
@@ -39,9 +40,7 @@ class EasyAdmobInterstitialAd extends EasyAdBase {
     _isAdLoaded = false;
     _isAdLoading = false;
     _isAdLoadedFailed = false;
-    try {
-      _interstitialAd?.dispose();
-    } catch (_) {}
+    _interstitialAd?.dispose();
     _interstitialAd = null;
   }
 
@@ -65,14 +64,6 @@ class EasyAdmobInterstitialAd extends EasyAdBase {
                 precision,
                 currencyCode,
               );
-
-              onLogAdImpression?.call(
-                adNetwork,
-                adUnitType,
-                ad,
-                currencyCode,
-                valueMicros,
-              );
             };
             _isAdLoaded = true;
             _isAdLoading = false;
@@ -91,12 +82,9 @@ class EasyAdmobInterstitialAd extends EasyAdBase {
   }
 
   @override
-  dynamic show() async {
+  show() {
     final ad = _interstitialAd;
     if (ad == null) return;
-
-    _interstitialAd = null;
-    _isAdLoaded = false;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (InterstitialAd ad) {
@@ -105,32 +93,22 @@ class EasyAdmobInterstitialAd extends EasyAdBase {
       onAdDismissedFullScreenContent: (InterstitialAd ad) {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
 
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
+        // load();
       },
       onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
         onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
 
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
+        // load();
+      },
+      onAdImpression: (InterstitialAd ad) {
+        onLogAdImpression?.call(adNetwork, adUnitType, ad, '', 0.0, adIdName: adIdName);
       },
     );
-
-    try {
-      await ad.setImmersiveMode(_immersiveModeEnabled);
-    } catch (e) {
-      // Ignore if setImmersiveMode fails (e.g. ad already null or disposed on native)
-    }
-
-    try {
-      await ad.show();
-    } catch (e) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, ad, e.toString());
-      try {
-        await ad.dispose();
-      } catch (_) {}
-    }
+    ad.setImmersiveMode(_immersiveModeEnabled);
+    ad.show();
+    _interstitialAd = null;
+    _isAdLoaded = false;
   }
 }

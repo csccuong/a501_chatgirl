@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:easy_ads_flutter/easy_ads_flutter.dart';
 import 'package:flutter/material.dart';
-import 'easy_loading_splash.dart';
+import 'easy_ad_loading_popup.dart';
 
 class EasyInterstitialAdSplash extends StatefulWidget {
   final AdNetwork adNetwork;
   final String adId;
+  final String? adIdName;
   final void Function()? onShowed;
   final void Function()? onFailed;
   final void Function()? adDismissed;
@@ -16,6 +17,7 @@ class EasyInterstitialAdSplash extends StatefulWidget {
     super.key,
     this.adNetwork = AdNetwork.admob,
     required this.adId,
+    this.adIdName,
     this.onShowed,
     this.adDismissed,
     this.onFailed,
@@ -32,6 +34,7 @@ class _EasyInterstitialAdSplashState extends State<EasyInterstitialAdSplash>
   late final EasyAdBase? _interstitialAd = EasyAds.instance.createInterstitial(
     adNetwork: widget.adNetwork,
     adId: widget.adId,
+    adIdName: widget.adIdName,
     immersiveModeEnabled: true,
   );
 
@@ -177,11 +180,6 @@ class _EasyInterstitialAdSplashState extends State<EasyInterstitialAdSplash>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: EasyLoadingSplash(
-        message: EasyAds.configuredLoadingMessage,
-      ),
-    );
+    return const EasyAdLoadingPopup();
   }
 }

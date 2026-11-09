@@ -1,3 +1,4 @@
+import 'firebase_options.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -31,13 +32,19 @@ import 'utils/app_setting.dart';
 
 final navigatorKey = Get.key;
 
-const bool isProduction = false;
+const bool isProduction = true;
 
 String separateDataString = "o_____o";
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.android,
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
   print('Handling a background message ${message.messageId}');
 }
 
@@ -100,7 +107,13 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.immersiveSticky,
   );
-  await Firebase.initializeApp();
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.android,
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   try {
     await FirebaseRemoteConfigService.initFirebaseRemoteConfig();

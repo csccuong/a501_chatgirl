@@ -3,7 +3,11 @@ import '../../easy_ads_flutter.dart';
 class EasyAdmobAppOpenAd extends EasyAdBase {
   final AdRequest _adRequest;
 
-  EasyAdmobAppOpenAd(super.adUnitId, this._adRequest);
+  EasyAdmobAppOpenAd(
+    super.adUnitId,
+    this._adRequest, {
+    String? adIdName,
+  }) : super(adIdName: adIdName);
 
   AppOpenAd? _appOpenAd;
   bool _isShowingAd = false;
@@ -29,15 +33,11 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
 
   @override
   void dispose() {
+    _appOpenAd?.dispose();
+    _appOpenAd = null;
     _isAdLoadedFailed = false;
     _isAdLoaded = false;
     _isAdLoading = false;
-    _loadTime = null;
-    _isShowingAd = false;
-    try {
-      _appOpenAd?.dispose();
-    } catch (_) {}
-    _appOpenAd = null;
   }
 
   @override
@@ -69,14 +69,6 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
               precision,
               currencyCode,
             );
-
-            onLogAdImpression?.call(
-              adNetwork,
-              adUnitType,
-              ad,
-              currencyCode,
-              valueMicros,
-            );
           };
           _isAdLoaded = true;
           _isAdLoading = false;
@@ -97,7 +89,7 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
   }
 
   @override
-  dynamic show() async {
+  show() async {
     if (!isAdLoaded) {
       onAdFailedToShow?.call(adNetwork, adUnitType, null, 'Ad not loaded');
       return;
@@ -109,13 +101,7 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
       return;
     }
 
-    final ad = _appOpenAd;
-    if (ad == null) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, null, 'Ad is null');
-      return;
-    }
-
-    ad.fullScreenContentCallback = FullScreenContentCallback(
+    _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (AppOpenAd ad) {
         _isShowingAd = true;
         onAdShowed?.call(adNetwork, adUnitType, ad);
@@ -123,9 +109,7 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
       onAdDismissedFullScreenContent: (AppOpenAd ad) {
         _isShowingAd = false;
         onAdDismissed?.call(adNetwork, adUnitType, ad);
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
         _appOpenAd = null;
         _isAdLoaded = false;
         _loadTime = null;
@@ -133,26 +117,16 @@ class EasyAdmobAppOpenAd extends EasyAdBase {
       onAdFailedToShowFullScreenContent: (AppOpenAd ad, AdError error) {
         _isShowingAd = false;
         onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
         _appOpenAd = null;
         _isAdLoaded = false;
         _loadTime = null;
       },
+      onAdImpression: (AppOpenAd ad) {
+        onLogAdImpression?.call(adNetwork, adUnitType, ad, '', 0.0, adIdName: adIdName);
+      },
     );
 
-    try {
-      await ad.show();
-    } catch (e) {
-      _isShowingAd = false;
-      onAdFailedToShow?.call(adNetwork, adUnitType, ad, e.toString());
-      try {
-        await ad.dispose();
-      } catch (_) {}
-      _appOpenAd = null;
-      _isAdLoaded = false;
-      _loadTime = null;
-    }
+    _appOpenAd!.show();
   }
 }

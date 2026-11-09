@@ -21,4 +21,6 @@ export 'package:easy_ads_flutter/src/utils/easy_reward_ad.dart';
 export 'package:easy_ads_flutter/src/utils/i_ad_id_manager.dart';
 export 'package:easy_ads_flutter/helper/adjust_helper.dart';
 export 'package:easy_ads_flutter/src/services/ads_service.dart';
+export 'package:easy_ads_flutter/src/services/easy_gsm_service.dart';
+export 'package:easy_ads_flutter/src/utils/easy_ad_loading_popup.dart';
 export 'package:google_mobile_ads/google_mobile_ads.dart';

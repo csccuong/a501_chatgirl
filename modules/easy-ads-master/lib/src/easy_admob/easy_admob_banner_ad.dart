@@ -14,9 +14,10 @@ class EasyAdmobBannerAd extends EasyAdBase {
     String adUnitId, {
     AdRequest? adRequest,
     required AdSize? adSize,
+    String? adIdName,
   })  : _adRequest = adRequest ?? const AdRequest(),
         adSize = adSize ?? AdSize.banner,
-        super(adUnitId);
+        super(adUnitId, adIdName: adIdName);
 
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
@@ -86,6 +87,7 @@ class EasyAdmobBannerAd extends EasyAdBase {
               onAdShowed?.call(adNetwork, adUnitType, ad);
             },
           );
+          onLogAdImpression?.call(adNetwork, adUnitType, ad, '', 0.0, adIdName: adIdName);
         },
         onPaidEvent: (ad, valueMicros, precision, currencyCode) {
           onPaidEvent?.call(
@@ -95,14 +97,6 @@ class EasyAdmobBannerAd extends EasyAdBase {
             valueMicros,
             precision,
             currencyCode,
-          );
-
-          onLogAdImpression?.call(
-            adNetwork,
-            adUnitType,
-            ad,
-            currencyCode,
-            valueMicros,
           );
         },
       ),
@@ -120,13 +114,21 @@ class EasyAdmobBannerAd extends EasyAdBase {
     }
     return Container(
       height: adSize.height.toDouble(),
-      width: adSize.width.toDouble(),
+      width: double.infinity,
       decoration: const BoxDecoration(
         color: Colors.transparent,
       ),
       child: Stack(
         children: [
-          if (ad != null && isAdLoaded) AdWidget(ad: ad),
+          if (ad != null && isAdLoaded)
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: adSize.width.toDouble(),
+                height: adSize.height.toDouble(),
+                child: AdWidget(ad: ad),
+              ),
+            ),
           if (_isAdLoading)
             Container(
               color: Colors.transparent,

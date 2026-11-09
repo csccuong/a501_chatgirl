@@ -200,12 +200,9 @@ class _EasyAppOpenAdWith2IdState extends State<EasyAppOpenAdWith2Id>
     });
   }
 
-  bool _isDisposed = false;
-
   Future<void> _showAd() => Future.delayed(
         const Duration(seconds: 1),
         () {
-          if (_isDisposed || !mounted) return;
           if (_appLifecycleState == AppLifecycleState.resumed) {
             if (mounted && _currentAd?.isAdLoaded == true) {
               _currentAd?.show();
@@ -217,7 +214,7 @@ class _EasyAppOpenAdWith2IdState extends State<EasyAppOpenAdWith2Id>
       );
 
   void _tryShowOnce() {
-    if (_showInitiated || _adShown || _isDisposed) return;
+    if (_showInitiated || _adShown) return;
     _showInitiated = true;
     _showAd();
   }
@@ -252,11 +249,8 @@ class _EasyAppOpenAdWith2IdState extends State<EasyAppOpenAdWith2Id>
 
   @override
   void dispose() {
-    _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
-    try {
-      _currentAd?.dispose();
-    } catch (_) {}
+    _currentAd?.dispose();
     _streamSubscription?.cancel();
     EasyAds.instance.setFullscreenAdShowing(false);
     EasyAds.instance.setManualAppOpenAdShowing(false);

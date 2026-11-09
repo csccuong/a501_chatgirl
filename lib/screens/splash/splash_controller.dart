@@ -148,6 +148,9 @@ class SplashController extends BaseController {
 
     // Set up global ad event listener
     EasyAds.instance.onEvent.listen((AdEvent event) {
+      if (event.type == AdEventType.adNetworkInitialized) {
+        _triggerPreloadIfReady();
+      }
       AppUtil.showLogFull("EasyAds Event: ${event.type} - ${event.adUnitType}");
 
       // 1. Paid Event (Revenue)
@@ -178,6 +181,16 @@ class SplashController extends BaseController {
     });
 
     Constants.isMobileAdsSDKInit = true;
+    if (EasyAds.instance.isInitialized) {
+      _triggerPreloadIfReady();
+    }
+  }
+
+  bool _isPreloadTriggered = false;
+
+  void _triggerPreloadIfReady() {
+    if (_isPreloadTriggered) return;
+    _isPreloadTriggered = true;
     requestPreloadAdvertisements();
   }
 

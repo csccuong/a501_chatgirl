@@ -44,7 +44,9 @@ class _EasyAppOpenAdWithIdState extends State<EasyAppOpenAdWithId>
     _loadAndShowAppOpenAd();
 
     _streamSubscription = EasyAds.instance.onEvent.listen((event) {
-      if (event.adUnitType == AdUnitType.appOpen) {
+      final resolvedId = EasyAds.instance.resolveAdUnitId(widget.adId);
+      if (event.adUnitType == AdUnitType.appOpen &&
+          (event.adUnitId == widget.adId || event.adUnitId == resolvedId)) {
         switch (event.type) {
           case AdEventType.adLoaded:
             // Only process if ad hasn't been shown yet
@@ -122,18 +124,16 @@ class _EasyAppOpenAdWithIdState extends State<EasyAppOpenAdWithId>
     }
   }
 
-  bool _isDisposed = false;
-
   void _onAdLoaded() {
     // Prevent multiple show calls
-    if (_showInitiated || _adShown || _isDisposed) {
+    if (_showInitiated || _adShown) {
       return;
     }
 
-    if (_currentAd?.isAdLoaded == true && !_adShown && mounted && !_isDisposed) {
+    if (_currentAd?.isAdLoaded == true && !_adShown && mounted) {
       _showInitiated = true;
       Future.delayed(const Duration(milliseconds: 300), () {
-        if (!_isDisposed && mounted && _currentAd?.isAdLoaded == true && !_adShown) {
+        if (mounted && _currentAd?.isAdLoaded == true && !_adShown) {
           _currentAd?.show();
         } else {
           _showInitiated = false; // Reset if show failed
@@ -162,11 +162,8 @@ class _EasyAppOpenAdWithIdState extends State<EasyAppOpenAdWithId>
 
   @override
   void dispose() {
-    _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
-    try {
-      _currentAd?.dispose();
-    } catch (_) {}
+    _currentAd?.dispose();
     _streamSubscription?.cancel();
     EasyAds.instance.setFullscreenAdShowing(false);
     EasyAds.instance.setManualAppOpenAdShowing(false);

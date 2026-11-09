@@ -11,8 +11,9 @@ class EasyAdmobRewardedAd extends EasyAdBase {
   EasyAdmobRewardedAd(
     String adUnitId,
     this._adRequest,
-    this._immersiveModeEnabled,
-  ) : super(adUnitId);
+    this._immersiveModeEnabled, {
+    String? adIdName,
+  }) : super(adUnitId, adIdName: adIdName);
 
   RewardedAd? _rewardedAd;
   bool _isAdLoaded = false;
@@ -39,9 +40,7 @@ class EasyAdmobRewardedAd extends EasyAdBase {
     _isAdLoaded = false;
     _isAdLoading = false;
     _isAdLoadedFailed = false;
-    try {
-      _rewardedAd?.dispose();
-    } catch (_) {}
+    _rewardedAd?.dispose();
     _rewardedAd = null;
   }
 
@@ -67,13 +66,6 @@ class EasyAdmobRewardedAd extends EasyAdBase {
               precision,
               currencyCode,
             );
-            onLogAdImpression?.call(
-              adNetwork,
-              adUnitType,
-              ad,
-              currencyCode,
-              valueMicros,
-            );
           };
           _isAdLoaded = true;
           _isAdLoadedFailed = false;
@@ -90,12 +82,9 @@ class EasyAdmobRewardedAd extends EasyAdBase {
   }
 
   @override
-  dynamic show() async {
+  dynamic show() {
     final ad = _rewardedAd;
     if (ad == null) return;
-
-    _rewardedAd = null;
-    _isAdLoaded = false;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (RewardedAd ad) {
@@ -104,34 +93,25 @@ class EasyAdmobRewardedAd extends EasyAdBase {
       onAdDismissedFullScreenContent: (RewardedAd ad) {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
 
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
+        // load();
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
         onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
 
-        try {
-          ad.dispose();
-        } catch (_) {}
+        ad.dispose();
+        // load();
+      },
+      onAdImpression: (RewardedAd ad) {
+        onLogAdImpression?.call(adNetwork, adUnitType, ad, '', 0.0, adIdName: adIdName);
       },
     );
 
-    try {
-      await ad.setImmersiveMode(_immersiveModeEnabled);
-    } catch (e) {
-      // Ignore if setImmersiveMode fails (e.g. ad already null or disposed on native)
-    }
-
-    try {
-      await ad.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-        onEarnedReward?.call(adNetwork, adUnitType, reward.type, reward.amount);
-      });
-    } catch (e) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, ad, e.toString());
-      try {
-        await ad.dispose();
-      } catch (_) {}
-    }
+    ad.setImmersiveMode(_immersiveModeEnabled);
+    ad.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+      onEarnedReward?.call(adNetwork, adUnitType, reward.type, reward.amount);
+    });
+    _rewardedAd = null;
+    _isAdLoaded = false;
   }
 }

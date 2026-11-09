@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:easy_ads_flutter/easy_ads_flutter.dart';
 import 'package:flutter/material.dart';
-import 'easy_loading_splash.dart';
+import 'easy_ad_loading_popup.dart';
 
 class EasySplashAdWithInterstitialAndAppOpen extends StatefulWidget {
   final AdNetwork adNetwork;
@@ -150,9 +150,6 @@ class _EasySplashAdWithInterstitialAndAppOpenState
 
   @override
   Widget build(BuildContext context) {
-    return EasyLoadingSplash(
-      customSplash: EasyAds.configuredLoadingSplash,
-      message: EasyAds.configuredLoadingMessage,
-    );
+    return const EasyAdLoadingPopup();
   }
 }

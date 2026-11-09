@@ -12,11 +12,21 @@ class EasyAdjustService {
 
   static final EasyAdjustService _instance = EasyAdjustService._internal();
 
-  Future<void> initAdjust(AdjustConfig config) async {
+  Future<void> initAdjust(
+    AdjustConfig config, {
+    Function(bool isOrganic)? onOrganicChanged,
+  }) async {
     config.logLevel = AdjustLogLevel.verbose;
 
     config.attributionCallback = (attributionChangedData) {
       print('[Adjust]: Attribution changed!');
+      AdjustHelper.saveAttributionNetwork(attributionChangedData.network);
+      if (attributionChangedData.network != null &&
+          attributionChangedData.network!.isNotEmpty) {
+        bool isOrganic =
+            attributionChangedData.network!.toLowerCase().contains('organic');
+        onOrganicChanged?.call(isOrganic);
+      }
       if (attributionChangedData.trackerToken != null) {
         print('[Adjust]: Tracker token: ' + attributionChangedData.trackerToken!);
       }
@@ -29,7 +39,6 @@ class EasyAdjustService {
       if (attributionChangedData.network != null) {
         print('[Adjust]: Network: ' + attributionChangedData.network!);
       }
-      AdjustHelper.saveAttributionNetwork(attributionChangedData.network);
       if (attributionChangedData.creative != null) {
         print('[Adjust]: Creative: ' + attributionChangedData.creative!);
       }
@@ -167,6 +176,15 @@ class EasyAdjustService {
 
     print('[Adjust]: init SDK from easy_ads');
     Adjust.initSdk(config);
+
+    Adjust.getAttribution().then((attribution) {
+      if (attribution.network != null && attribution.network!.isNotEmpty) {
+        AdjustHelper.saveAttributionNetwork(attribution.network);
+        bool isOrganic =
+            attribution.network!.toLowerCase().contains('organic');
+        onOrganicChanged?.call(isOrganic);
+      }
+    });
   }
 
   void logAdRevenue(

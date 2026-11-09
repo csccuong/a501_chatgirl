@@ -5,7 +5,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import '../src/services/ads_service.dart';
 
 class AdjustHelper {
   static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
@@ -22,7 +21,6 @@ class AdjustHelper {
     adjustToken = token;
     adjustEventTokenIAP = iapToken;
     isProduction = isProd;
-    AdsService().init();
   }
 
   static Future<void> saveAttributionNetwork(String? network) async {
@@ -38,12 +36,6 @@ class AdjustHelper {
     bool isOrganicUser = network.toLowerCase().contains('organic');
     print('👉 Is Organic User: $isOrganicUser');
     print('====================================================');
-
-    await AdsService.setIsOrganic(isOrganicUser);
-  }
-
-  static Future<bool> isOrganicUser() async {
-    return await AdsService.isOrganicAsync();
   }
 
   static String adjustEventTokenBuyWeeklySuccess = '';
@@ -74,18 +66,20 @@ class AdjustHelper {
     Adjust.trackEvent(adjustEvent);
   }
 
-  trackEventInAppPurchase({
+  trackEventBuyMonthlySuccess({
     required PurchaseDetails purchase,
     required ProductDetails productDetail,
   }) {
-    if (isProduction) {
-      AdjustEvent adjustEvent = AdjustEvent(adjustEventTokenIAP);
-      adjustEvent.deduplicationId = purchase.purchaseID;
-      adjustEvent.setRevenue(
-          productDetail.rawPrice, productDetail.currencyCode);
-
-      Adjust.trackEvent(adjustEvent);
-    }
+    Future.delayed(const Duration(milliseconds: 2000), () async {
+      if (isProduction) {
+        AdjustEvent adjustEventMonthly =
+        AdjustEvent(adjustEventTokenBuyMonthlySuccess);
+        if (kDebugMode) {
+          print('AdjustHelper trackEventBuyMonthlySuccess');
+        }
+        Adjust.trackEvent(adjustEventMonthly);
+      }
+    });
   }
 
   trackEventBuyWeeklySuccess({
@@ -95,21 +89,11 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEventWeekly =
-            AdjustEvent(adjustEventTokenBuyWeeklySuccess);
+        AdjustEvent(adjustEventTokenBuyWeeklySuccess);
+        if (kDebugMode) {
+          print('AdjustHelper trackEventBuyWeeklySuccess');
+        }
         Adjust.trackEvent(adjustEventWeekly);
-      }
-    });
-  }
-
-  trackEventBuyMonthlySuccess({
-    required PurchaseDetails purchase,
-    required ProductDetails productDetail,
-  }) {
-    Future.delayed(const Duration(milliseconds: 2000), () async {
-      if (isProduction) {
-        AdjustEvent adjustEventMonthly =
-            AdjustEvent(adjustEventTokenBuyMonthlySuccess);
-        Adjust.trackEvent(adjustEventMonthly);
       }
     });
   }
@@ -121,10 +105,26 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEventYearly =
-            AdjustEvent(adjustEventTokenBuyYearlySuccess);
+        AdjustEvent(adjustEventTokenBuyYearlySuccess);
+        if (kDebugMode) {
+          print('AdjustHelper trackEventBuyYearlySuccess');
+        }
         Adjust.trackEvent(adjustEventYearly);
       }
     });
+  }
+
+  trackEventInAppPurchase({
+    required PurchaseDetails purchase,
+    required ProductDetails productDetail,
+  }) {
+    if (isProduction) {
+      AdjustEvent adjustEvent = AdjustEvent(adjustEventTokenIAP);
+      adjustEvent.transactionId = purchase.purchaseID;
+      adjustEvent.setRevenue(
+          productDetail.rawPrice, productDetail.currencyCode);
+      Adjust.trackEvent(adjustEvent);
+    }
   }
 
   trackEventBuyYearlySaleSuccess({
@@ -134,7 +134,10 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEventYearly =
-            AdjustEvent(adjustEventTokenBuyYearlySaleSuccess);
+        AdjustEvent(adjustEventTokenBuyYearlySaleSuccess);
+        if (kDebugMode) {
+          print('AdjustHelper trackEventBuyYearlySaleSuccess');
+        }
         Adjust.trackEvent(adjustEventYearly);
       }
     });
@@ -147,7 +150,10 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEventLifetime =
-            AdjustEvent(adjustEventTokenBuyLifetimeSuccess);
+        AdjustEvent(adjustEventTokenBuyLifetimeSuccess);
+        if (kDebugMode) {
+          print('AdjustHelper trackEventBuyYearlySuccess');
+        }
         Adjust.trackEvent(adjustEventLifetime);
       }
     });
@@ -160,7 +166,10 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEvent3Months =
-            AdjustEvent(adjustEventTokenBuy3MonthsSuccess);
+        AdjustEvent(adjustEventTokenBuy3MonthsSuccess);
+        if (kDebugMode) {
+          print('AdjustHelper adjustEventTokenBuy3MonthsSuccess');
+        }
         Adjust.trackEvent(adjustEvent3Months);
       }
     });
@@ -173,7 +182,10 @@ class AdjustHelper {
     Future.delayed(const Duration(milliseconds: 2000), () async {
       if (isProduction) {
         AdjustEvent adjustEventRemoveAds =
-            AdjustEvent(adjustEventTokenBuyRemoveAdsSuccess);
+        AdjustEvent(adjustEventTokenBuyRemoveAdsSuccess);
+        if (kDebugMode) {
+          print('AdjustHelper adjustEventTokenBuyRemoveAdsSuccess');
+        }
         Adjust.trackEvent(adjustEventRemoveAds);
       }
     });

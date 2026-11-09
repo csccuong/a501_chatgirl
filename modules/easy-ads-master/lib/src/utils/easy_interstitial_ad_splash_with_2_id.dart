@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:easy_ads_flutter/easy_ads_flutter.dart';
 import 'package:flutter/material.dart';
-import 'easy_loading_splash.dart';
+import 'easy_ad_loading_popup.dart';
 
 class EasyInterstitialAdSplashWith2Id extends StatefulWidget {
   final AdNetwork adNetwork;
   final String adIdHigh;
   final String adIdAll;
+  final String? adIdNameHigh;
+  final String? adIdNameAll;
   final void Function()? onShowed;
   final void Function()? onFailed;
   final void Function()? adDismissed;
@@ -18,6 +20,8 @@ class EasyInterstitialAdSplashWith2Id extends StatefulWidget {
     this.adNetwork = AdNetwork.admob,
     required this.adIdHigh,
     required this.adIdAll,
+    this.adIdNameHigh,
+    this.adIdNameAll,
     this.onShowed,
     this.adDismissed,
     this.onFailed,
@@ -33,14 +37,40 @@ class _EasyInterstitialAdSplashWith2IdState
     extends State<EasyInterstitialAdSplashWith2Id> with WidgetsBindingObserver {
   EasyAdBase? _currentAd;
   StreamSubscription? _streamSubscription;
+  Timer? _timeoutTimer;
   bool _isLoading = true;
   bool _adShown = false;
-  int _currentAdIndex = 0;
+  bool _isDisposed = false;
 
   final List<String> _adIds = [];
   bool _currentLoadFailed = false;
   bool _currentLoadSucceeded = false;
   bool _showInitiated = false;
+
+  void _dismissAndClose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _timeoutTimer?.cancel();
+    _streamSubscription?.cancel();
+    EasyAds.instance.setFullscreenAdShowing(false);
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    widget.adDismissed?.call();
+  }
+
+  void _dismissAndFail() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _isLoading = false;
+    _timeoutTimer?.cancel();
+    _streamSubscription?.cancel();
+    EasyAds.instance.setFullscreenAdShowing(false);
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+    widget.onFailed?.call();
+  }
 
   @override
   void initState() {
@@ -50,6 +80,13 @@ class _EasyInterstitialAdSplashWith2IdState
 
     // Initialize ad IDs in priority order
     _adIds.addAll([widget.adIdHigh, widget.adIdAll]);
+
+    // Safety timeout: max 10 seconds waiting for splash inter ad
+    _timeoutTimer = Timer(const Duration(seconds: 10), () {
+      if (!_adShown && mounted) {
+        _dismissAndFail();
+      }
+    });
 
     // Start loading process
     _loadAdsSequentially();
@@ -76,9 +113,7 @@ class _EasyInterstitialAdSplashWith2IdState
             _onAdFailedToLoad();
             break;
           case AdEventType.adDismissed:
-            EasyAds.instance.setFullscreenAdShowing(false);
-            widget.adDismissed?.call();
-            _streamSubscription?.cancel();
+            _dismissAndClose();
             break;
           case AdEventType.adFailedToShow:
             _onAdFailedToShow();
@@ -92,9 +127,8 @@ class _EasyInterstitialAdSplashWith2IdState
 
   Future<void> _loadAdsSequentially() async {
     for (int i = 0; i < _adIds.length; i++) {
-      if (!mounted || _adShown) break;
+      if (!mounted || _adShown || _isDisposed) break;
 
-      _currentAdIndex = i;
       // Dispose previous ad if any
       _currentAd?.dispose();
       // Create only the current ad we are trying to load
@@ -133,9 +167,9 @@ class _EasyInterstitialAdSplashWith2IdState
 
   Future<void> _waitForAdResult() async {
     int attempts = 0;
-    const int maxAttempts = 400; // 20 seconds max (50ms * 400)
+    const int maxAttempts = 160; // 8 seconds max per ad attempt (50ms * 160)
 
-    while (attempts < maxAttempts && mounted && !_adShown) {
+    while (attempts < maxAttempts && mounted && !_adShown && !_isDisposed) {
       await Future.delayed(const Duration(milliseconds: 50));
       attempts++;
 
@@ -149,36 +183,29 @@ class _EasyInterstitialAdSplashWith2IdState
   }
 
   void _onAdLoaded() {
-    if (_currentAd?.isAdLoaded == true && !_adShown) {
+    if (_currentAd?.isAdLoaded == true && !_adShown && !_isDisposed) {
       _tryShowOnce();
     }
   }
 
   void _onAdFailedToLoad() {
     print(
-        '[EasyInterstitialAdSplashWith2Id] Ad ${_currentAdIndex + 1} failed to load');
-    // Continue to next ad in sequence
+        '[EasyInterstitialAdSplashWith2Id] Ad  failed to load');
   }
 
   void _onAdFailedToShow() {
     print(
-        '[EasyInterstitialAdSplashWith2Id] Ad ${_currentAdIndex + 1} failed to show');
-    // Mark as failed so the loader can proceed to next ad
+        '[EasyInterstitialAdSplashWith2Id] Ad  failed to show');
     _currentLoadFailed = true;
     _showInitiated = false;
   }
 
   void _onAllAdsFailed() {
-    _isLoading = false;
-    widget.onFailed?.call();
-    EasyAds.instance.setFullscreenAdShowing(false);
-    _streamSubscription?.cancel();
+    _dismissAndFail();
   }
 
-  bool _isDisposed = false;
-
   Future<void> _showAd() => Future.delayed(
-        const Duration(seconds: 1),
+        const Duration(milliseconds: 500),
         () {
           if (_isDisposed || !mounted) return;
           if (_appLifecycleState == AppLifecycleState.resumed) {
@@ -213,7 +240,7 @@ class _EasyInterstitialAdSplashWith2IdState
     int attempts = 0;
     const int maxAttempts = 120; // 6 seconds max (50ms * 120)
 
-    while (attempts < maxAttempts && mounted) {
+    while (attempts < maxAttempts && mounted && !_isDisposed) {
       await Future.delayed(const Duration(milliseconds: 50));
       attempts++;
 
@@ -229,6 +256,7 @@ class _EasyInterstitialAdSplashWith2IdState
   @override
   void dispose() {
     _isDisposed = true;
+    _timeoutTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     try {
       _currentAd?.dispose();
@@ -239,11 +267,6 @@ class _EasyInterstitialAdSplashWith2IdState
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: EasyLoadingSplash(
-        message: EasyAds.configuredLoadingMessage,
-      ),
-    );
+    return const EasyAdLoadingPopup();
   }
 }

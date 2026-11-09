@@ -11,6 +11,8 @@ class EasyNativeAdHigh extends StatefulWidget {
   final String factoryId;
   final String adId;
   final String adIdHigh;
+  final String? adIdName;
+  final String? adIdNameHigh;
   final double height;
   final VoidCallback? onLoaded;
   final VoidCallback? onFailedToLoad;
@@ -20,6 +22,8 @@ class EasyNativeAdHigh extends StatefulWidget {
     required this.factoryId,
     required this.adId,
     required this.adIdHigh,
+    this.adIdName,
+    this.adIdNameHigh,
     required this.height,
     this.onLoaded,
     this.onFailedToLoad,
@@ -32,6 +36,11 @@ class EasyNativeAdHigh extends StatefulWidget {
 }
 
 class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
+  late final String _cacheKeyHigh = widget.adIdNameHigh ??
+      (widget.adIdHigh.startsWith('ca-app-pub-') ? widget.adIdHigh : widget.adIdHigh);
+  late final String _cacheKeyFallback = widget.adIdName ??
+      (widget.adId.startsWith('ca-app-pub-') ? widget.adId : widget.adId);
+
   EasyAdBase? _ad;
   EasyAdBase? _nativeAd; // fallback (all)
   EasyAdBase? _nativeAdHigh; // high priority
@@ -45,20 +54,36 @@ class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
   @override
   void initState() {
     super.initState();
-    if (EasyAds.instance.isAdSuppressedByCallback) {
+    if (EasyAds.instance.isPremiumUser) {
+      _isAdLoading = false;
       return;
     }
     _isAdLoading = true;
-    // Step 1: create and load HIGH only
-    _nativeAdHigh = EasyAds.instance.createNative(
-      adNetwork: widget.adNetwork,
-      factoryId: widget.factoryId,
-      adId: widget.adIdHigh,
-      height: widget.height,
-    );
-    _nativeAdHigh?.load();
 
-    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    // Check / preload HIGH in cache
+    _nativeAdHigh = EasyAds.instance.getCachedNativeAd(_cacheKeyHigh);
+    if (_nativeAdHigh == null || _nativeAdHigh!.isAdLoadedFailed) {
+      EasyAds.instance.preloadNativeAd(
+        adId: widget.adIdHigh,
+        adIdName: widget.adIdNameHigh ?? widget.adIdName,
+        factoryId: widget.factoryId,
+        height: widget.height,
+        cacheKey: _cacheKeyHigh,
+        adNetwork: widget.adNetwork,
+      );
+      _nativeAdHigh = EasyAds.instance.getCachedNativeAd(_cacheKeyHigh);
+    }
+
+    _timer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
+      if (EasyAds.instance.isPremiumUser) {
+        _timer?.cancel();
+        _timer = null;
+        _ad = null;
+        _isAdLoading = false;
+        if (mounted) setState(() {});
+        return;
+      }
+
       // If HIGH loaded -> use it and stop
       if (_nativeAdHigh?.isAdLoaded == true) {
         _timer?.cancel();
@@ -66,20 +91,24 @@ class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
         _ad = _nativeAdHigh;
         _isAdLoaded = true;
         _finalized = true;
-        // Fire loaded callback only once when selection is finalized
         widget.onLoaded?.call();
         EasyLogger().logInfo('Load native high success');
       }
 
       // If HIGH failed -> create and load FALLBACK (ALL) once
       if (_nativeAdHigh?.isAdLoadedFailed == true && _nativeAd == null) {
-        _nativeAd = EasyAds.instance.createNative(
-          adNetwork: widget.adNetwork,
-          factoryId: widget.factoryId,
-          adId: widget.adId,
-          height: widget.height,
-        );
-        _nativeAd?.load();
+        _nativeAd = EasyAds.instance.getCachedNativeAd(_cacheKeyFallback);
+        if (_nativeAd == null || _nativeAd!.isAdLoadedFailed) {
+          EasyAds.instance.preloadNativeAd(
+            adId: widget.adId,
+            adIdName: widget.adIdName,
+            factoryId: widget.factoryId,
+            height: widget.height,
+            cacheKey: _cacheKeyFallback,
+            adNetwork: widget.adNetwork,
+          );
+          _nativeAd = EasyAds.instance.getCachedNativeAd(_cacheKeyFallback);
+        }
       }
 
       // If FALLBACK loaded after HIGH failed -> use it and stop
@@ -111,9 +140,16 @@ class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
       }
     });
 
-    // Listen to native ad events:
-    // - Defer impression callback until after selection is finalized
     _adEventSubscription = EasyAds.instance.onEvent.listen((event) {
+      if (EasyAds.instance.isPremiumUser) {
+        _timer?.cancel();
+        _timer = null;
+        _ad = null;
+        _isAdLoading = false;
+        if (mounted) setState(() {});
+        return;
+      }
+
       if (event.adUnitType == AdUnitType.native) {
         if (_finalized &&
             !_impressionSent &&
@@ -123,13 +159,10 @@ class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
         }
       }
     });
-    super.initState();
   }
 
   @override
   void dispose() {
-    _nativeAd?.dispose();
-    _nativeAdHigh?.dispose();
     _timer?.cancel();
     _timer = null;
     _adEventSubscription?.cancel();
@@ -137,31 +170,9 @@ class _EasyNativeAdHighState extends State<EasyNativeAdHigh> {
   }
 
   @override
-  void didUpdateWidget(covariant EasyNativeAdHigh oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (EasyAds.instance.isAdSuppressedByCallback) {
-      _timer?.cancel();
-      _timer = null;
-      _nativeAd?.dispose();
-      _nativeAdHigh?.dispose();
-      _nativeAd = null;
-      _nativeAdHigh = null;
-      _ad = null;
-      setState(() {});
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (EasyAds.instance.isAdSuppressedByCallback) {
-      _timer?.cancel();
-      _timer = null;
-      _nativeAd?.dispose();
-      _nativeAdHigh?.dispose();
-      _nativeAd = null;
-      _nativeAdHigh = null;
-      _ad = null;
-      return const SizedBox.shrink();
+    if (EasyAds.instance.isPremiumUser) {
+      return const SizedBox();
     }
     if (_isAdLoading) {
       return EasyLoadingAd(height: widget.height);

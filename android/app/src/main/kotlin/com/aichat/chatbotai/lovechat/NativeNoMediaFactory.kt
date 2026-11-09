@@ -1,26 +1,55 @@
 package com.aichat.chatbotai.lovechat
 
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
-import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
+import io.flutter.plugins.googlemobileads.NativeAdFactory
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
-class NativeNoMediaFactory(private val layoutInflater: LayoutInflater) : GoogleMobileAdsPlugin.NativeAdFactory {
+class NativeNoMediaFactory(private val layoutInflater: LayoutInflater) : NativeAdFactory {
 
     override fun createNativeAd(
         nativeAd: NativeAd,
         customOptions: MutableMap<String, Any>?
     ): NativeAdView {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            return buildNativeAdView(nativeAd)
+        }
+
+        var result: NativeAdView? = null
+        var caughtError: Throwable? = null
+        val latch = CountDownLatch(1)
+
+        Handler(Looper.getMainLooper()).post {
+            try {
+                result = buildNativeAdView(nativeAd)
+            } catch (t: Throwable) {
+                caughtError = t
+            } finally {
+                latch.countDown()
+            }
+        }
+
+        try {
+            latch.await(5, TimeUnit.SECONDS)
+        } catch (_: InterruptedException) {}
+
+        if (caughtError != null) {
+            throw RuntimeException(caughtError)
+        }
+
+        return result ?: buildNativeAdView(nativeAd)
+    }
+
+    private fun buildNativeAdView(nativeAd: NativeAd): NativeAdView {
         val adView = layoutInflater.inflate(R.layout.layout_native_no_media, null) as NativeAdView
-        adView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
 
         // Set other ad assets.
         adView.headlineView = adView.findViewById(R.id.ad_headline)
@@ -29,7 +58,7 @@ class NativeNoMediaFactory(private val layoutInflater: LayoutInflater) : GoogleM
 
         (adView.headlineView as? TextView)?.text = nativeAd.headline
 
-        // These assets aren't guaranteed to be in every NativeAd, so it's important to check before trying to display them.
+        // These assets aren't guaranteed to be in every NativeAd.
         if (nativeAd.callToAction == null) {
             adView.callToActionView?.visibility = View.INVISIBLE
         } else {
@@ -44,9 +73,8 @@ class NativeNoMediaFactory(private val layoutInflater: LayoutInflater) : GoogleM
             adView.iconView?.visibility = View.VISIBLE
         }
 
-        // This method tells the Google Mobile Ads SDK that you have finished setting your ad assets, 
-        // and that the ad is now ready to be displayed.
-        adView.setNativeAd(nativeAd)
+        // Register NativeAd safely on the UI Thread
+        adView.registerNativeAd(nativeAd, null)
 
         return adView
     }

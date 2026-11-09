@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -133,15 +134,15 @@ class FirebaseRemoteConfigService {
     try {
       await remoteConfig.setConfigSettings(
         RemoteConfigSettings(
-          fetchTimeout: const Duration(seconds: 3),
-          minimumFetchInterval: const Duration(seconds: 60),
+          fetchTimeout: const Duration(seconds: 10),
+          minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(hours: 1),
         ),
       );
       await remoteConfig.setDefaults(_defaultValues);
       // Fetch and activate latest server values in background without blocking cold start / runApp()
       unawaited(
         remoteConfig.fetchAndActivate().timeout(
-              const Duration(seconds: 3),
+              const Duration(seconds: 10),
               onTimeout: () => false,
             ),
       );

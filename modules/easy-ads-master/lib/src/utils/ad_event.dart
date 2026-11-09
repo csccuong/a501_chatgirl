@@ -20,10 +20,7 @@ class AdEvent {
   /// In case of [AdEventType.adFailedToLoad] & [AdEventType.adFailedToShow] or in any error case
   final String? error;
 
-  final String? customAdUnitId;
-
   String? get adUnitId {
-    if (customAdUnitId != null && customAdUnitId!.isNotEmpty) return customAdUnitId;
     if (ad != null) return ad!.adUnitId;
     if (data is Ad) return (data as Ad).adUnitId;
     return null;
@@ -39,6 +36,5 @@ class AdEvent {
     this.currencyCode,
     this.data,
     this.error,
-    this.customAdUnitId,
   });
 }

@@ -5,9 +5,10 @@ import 'enums/ad_unit_type.dart';
 
 abstract class EasyAdBase {
   final String adUnitId;
+  final String? adIdName;
 
   /// This will be called for initialization when we don't have to wait for the initialization
-  EasyAdBase(this.adUnitId);
+  EasyAdBase(this.adUnitId, {this.adIdName});
 
   AdNetwork get adNetwork;
 
@@ -60,5 +61,6 @@ typedef EasyAdOnImpressionEvent = void Function(
   AdUnitType adUnitType,
   Ad ad,
   String currencyCode,
-  double valueMicros,
-);
+  double valueMicros, {
+  String? adIdName,
+});

@@ -40,6 +40,8 @@ class _EasyNativeAdHighCachedState extends State<EasyNativeAdHighCached> {
   @override
   void initState() {
     super.initState();
+    if (EasyAds.instance.isPremiumUser) return;
+
     _updateAdInstances();
 
     // If High is not in cache/loading, start preloading it automatically
@@ -65,6 +67,12 @@ class _EasyNativeAdHighCachedState extends State<EasyNativeAdHighCached> {
     }
 
     _streamSubscription = EasyAds.instance.onEvent.listen((event) {
+      if (EasyAds.instance.isPremiumUser) {
+        _nativeAdHigh = null;
+        _nativeAdFallback = null;
+        if (mounted) setState(() {});
+        return;
+      }
       if ((event.adUnitId == widget.adIdHigh || event.adUnitId == widget.adId) &&
           (event.type == AdEventType.adLoaded || event.type == AdEventType.adFailedToLoad)) {
         if (mounted) {
@@ -77,12 +85,18 @@ class _EasyNativeAdHighCachedState extends State<EasyNativeAdHighCached> {
   }
 
   void _updateAdInstances() {
+    if (EasyAds.instance.isPremiumUser) {
+      _nativeAdHigh = null;
+      _nativeAdFallback = null;
+      return;
+    }
     _nativeAdHigh = EasyAds.instance.getCachedNativeAd(widget.cacheKeyHigh);
     _nativeAdFallback = EasyAds.instance.getCachedNativeAd(widget.cacheKey);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (EasyAds.instance.isPremiumUser) return const SizedBox();
     // 1. If High is loaded, show it
     if (_nativeAdHigh != null && _nativeAdHigh!.isAdLoaded) {
       return _nativeAdHigh!.show() ?? const SizedBox();

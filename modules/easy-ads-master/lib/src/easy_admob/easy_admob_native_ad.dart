@@ -15,11 +15,12 @@ class EasyAdmobNativeAd extends EasyAdBase {
     String adUnitId,
     String factoryId,
     double height, {
+    String? adIdName,
     AdRequest? adRequest,
   })  : _adRequest = adRequest ?? const AdRequest(),
         _factoryId = factoryId,
         _height = height,
-        super(adUnitId);
+        super(adUnitId, adIdName: adIdName);
 
   NativeAd? _nativeAd;
   bool _isAdLoaded = false;
@@ -79,13 +80,7 @@ class EasyAdmobNativeAd extends EasyAdBase {
         onAdClosed: (Ad ad) => onAdDismissed?.call(adNetwork, adUnitType, ad),
         onAdImpression: (Ad ad) {
           onAdShowed?.call(adNetwork, adUnitType, ad);
-          onLogAdImpression?.call(
-            adNetwork,
-            adUnitType,
-            ad,
-            'USD',
-            0.0,
-          );
+          onLogAdImpression?.call(adNetwork, adUnitType, ad, '', 0.0, adIdName: adIdName);
         },
         onPaidEvent: (ad, valueMicros, precision, currencyCode) {
           try {
@@ -100,15 +95,6 @@ class EasyAdmobNativeAd extends EasyAdBase {
           } catch (e) {
             print('Error in onPaidEvent callback: $e');
           }
-
-          // Always call onLogAdImpression to fire onAdImpression event
-          onLogAdImpression?.call(
-            adNetwork,
-            adUnitType,
-            ad,
-            currencyCode,
-            valueMicros,
-          );
         },
       ),
     );

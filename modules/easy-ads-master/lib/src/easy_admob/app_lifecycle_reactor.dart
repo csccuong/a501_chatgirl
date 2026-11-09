@@ -18,6 +18,11 @@ import '../../easy_ads_flutter.dart';
 
 /// Listens for app foreground events and shows app open ads.
 class AppLifecycleReactor with WidgetsBindingObserver {
+  bool _pausedByIAP = false;
+
+  void setPausedByIAP(bool value) {
+    _pausedByIAP = value;
+  }
   final GlobalKey<NavigatorState> navigatorKey;
 
   bool _onSplashScreen = true;
@@ -25,7 +30,6 @@ class AppLifecycleReactor with WidgetsBindingObserver {
   bool _wasInactive = false;
 
   bool _pausedByAd = false;
-  bool _pausedByIAP = false;
   DateTime? _onSplashScreenFalseTime;
   bool _allowAppOpenAd = false;
 
@@ -37,10 +41,6 @@ class AppLifecycleReactor with WidgetsBindingObserver {
 
   void setAllowAppOpenAd(bool value) {
     _allowAppOpenAd = value;
-  }
-
-  void setPausedByIAP(bool value) {
-    _pausedByIAP = value;
   }
 
   void listenToAppStateChanges() {
@@ -85,22 +85,26 @@ class AppLifecycleReactor with WidgetsBindingObserver {
           EasyAds.instance.isManualAppOpenAdShowing) {
         _pausedByAd = true;
       }
-      if (EasyAds.instance.isIAPFlowActive ||
-          EasyAds.instance.isAppOpenAdSuppressed) {
-        _pausedByIAP = true;
-      }
     } else if (state == AppLifecycleState.resumed && _wasInactive) {
       _wasInactive = false;
       final wasPausedByAd = _pausedByAd;
       _pausedByAd = false; // Reset
-      final wasPausedByIAP = _pausedByIAP;
-      _pausedByIAP = false; // Reset
 
       if (_onSplashScreen) return;
       if (!_allowAppOpenAd) return;
 
-      if (EasyAds.instance.isAdSuppressedByCallback) {
-        debugPrint("AppLifecycleReactor: Suppressing app open ad (adSuppressedCallback is true)");
+      // Ignore landscape orientation
+      Orientation? currentOrientation;
+      if (navigatorKey.currentContext != null) {
+        try {
+          currentOrientation = MediaQuery.maybeOf(navigatorKey.currentContext!)?.orientation;
+        } catch (e) {
+          currentOrientation = null;
+        }
+      }
+
+      if (currentOrientation == Orientation.landscape) {
+        debugPrint("AppLifecycleReactor: Suppressing app open ad (Landscape orientation)");
         return;
       }
 
@@ -116,21 +120,6 @@ class AppLifecycleReactor with WidgetsBindingObserver {
       }
 
       if (wasPausedByAd) return;
-
-      if (wasPausedByIAP) {
-        debugPrint("AppLifecycleReactor: Suppressing app open ad (was paused by IAP)");
-        return;
-      }
-
-      if (EasyAds.instance.isIAPFlowActive) {
-        debugPrint("AppLifecycleReactor: Suppressing app open ad (IAP flow is active)");
-        return;
-      }
-
-      if (EasyAds.instance.isAppOpenAdSuppressed) {
-        debugPrint("AppLifecycleReactor: Suppressing app open ad (app open ad is suppressed)");
-        return;
-      }
 
       // Suppress ad if it was a quick transition (e.g., orientation change, keyboard popup)
       if (_inactiveTime != null) {

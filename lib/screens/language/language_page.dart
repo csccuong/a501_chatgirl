@@ -34,7 +34,7 @@ class LanguagePage extends GetView<LanguageController> {
                     _buildLanguageTopBar(),
                     Flexible(
                       flex: 1,
-                      child: _buildLanguageOptionList(),
+                      child: _buildLanguageOptionList(context),
                     )
                   ],
                 ),
@@ -44,7 +44,9 @@ class LanguagePage extends GetView<LanguageController> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: Obx(() {
+              child: SafeArea(
+                top: false,
+                child: Obx(() {
                 if (AppSetting.isPremiumUser.value ||
                     AppSetting.isRemoveAds.value ||
                     !controller.isFirstLaunchFlow.value) {
@@ -84,6 +86,7 @@ class LanguagePage extends GetView<LanguageController> {
 
                 return const SizedBox();
               }),
+              ),
             ),
             Obx(() {
               if (!controller.isLanguageLoading.value) return const SizedBox();
@@ -107,7 +110,7 @@ class LanguagePage extends GetView<LanguageController> {
     );
   }
 
-  Widget _buildLanguageOptionList() {
+  Widget _buildLanguageOptionList(BuildContext context) {
     return Obx(() {
       final bool hasAd = controller.isFirstLaunchFlow.value &&
           !AppSetting.isPremiumUser.value &&
@@ -120,7 +123,7 @@ class LanguagePage extends GetView<LanguageController> {
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          bottom: hasAd ? (AdDimen.mediumNativeHeight + 10) : 20,
+          bottom: hasAd ? (AdDimen.mediumNativeHeight + MediaQuery.of(context).padding.bottom + 10) : 20,
           top: 20,
         ),
         itemBuilder: (context, index) {
